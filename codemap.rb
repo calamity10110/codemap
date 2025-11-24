@@ -1,8 +1,8 @@
 class Codemap < Formula
   desc "Generates a compact, visually structured 'brain map' of your codebase for LLM context"
   homepage "https://github.com/JordanCoin/codemap"
-  url "https://github.com/JordanCoin/codemap/archive/refs/tags/1.0.tar.gz"
-  sha256 "ba7b3f5493a1c52d448202872d21f9ba23facc99a21d2d3f638fc39220dbb421"
+  url "https://github.com/JordanCoin/codemap/archive/refs/tags/v1.1.tar.gz"
+  sha256 "8ed89a8cb434558ccc17f2727abc0d586f55802fcb300b5b007011e97ba8f34d"
   license "MIT"
 
   depends_on "go" => :build
@@ -11,8 +11,8 @@ class Codemap < Formula
   include Language::Python::Virtualenv
 
   resource "rich" do
-    url "https://files.pythonhosted.org/packages/source/r/rich/rich-13.7.1.tar.gz"
-    sha256 "9be308cb1fe2f1f57d67ce99e95af38a1e2bc71ad9813b0e247cf7ffbcc3a432"
+    url "https://github.com/JordanCoin/codemap/archive/refs/tags/v1.1.tar.gz"
+    sha256 "8ed89a8cb434558ccc17f2727abc0d586f55802fcb300b5b007011e97ba8f34d"
   end
 
   # Add other python dependencies if needed (e.g. markdown-it-py, pygments, etc.)
