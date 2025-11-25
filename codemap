@@ -17,9 +17,18 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 
 # Paths
-SCANNER_BIN="$DIR/../libexec/bin/codemap-scanner"
-RENDERER_SCRIPT="$DIR/../libexec/renderer/render.py"
-PYTHON_BIN="$DIR/../libexec/venv/bin/python3"
+# Paths
+if [ -d "$DIR/libexec" ]; then
+    # Local development
+    SCANNER_BIN="$DIR/libexec/bin/codemap-scanner"
+    RENDERER_SCRIPT="$DIR/libexec/renderer/render.py"
+    PYTHON_BIN="$DIR/libexec/venv/bin/python3"
+else
+    # Installed distribution
+    SCANNER_BIN="$DIR/../libexec/bin/codemap-scanner"
+    RENDERER_SCRIPT="$DIR/../libexec/renderer/render.py"
+    PYTHON_BIN="$DIR/../libexec/venv/bin/python3"
+fi
 
 # Check if artifacts exist
 if [ ! -f "$SCANNER_BIN" ] || [ ! -f "$RENDERER_SCRIPT" ] || [ ! -f "$PYTHON_BIN" ]; then
@@ -31,7 +40,20 @@ if [ ! -f "$SCANNER_BIN" ] || [ ! -f "$RENDERER_SCRIPT" ] || [ ! -f "$PYTHON_BIN
 fi
 
 # Target directory (default to current)
-TARGET_DIR="${1:-.}"
+TARGET_DIR=""
+SKYLINE_MODE=""
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --skyline) SKYLINE_MODE="--skyline" ;;
+        *) TARGET_DIR="$1" ;;
+    esac
+    shift
+done
+
+if [ -z "$TARGET_DIR" ]; then
+    TARGET_DIR="."
+fi
 
 # Run
-"$SCANNER_BIN" "$TARGET_DIR" | "$PYTHON_BIN" "$RENDERER_SCRIPT"
+"$SCANNER_BIN" $SKYLINE_MODE "$TARGET_DIR" | "$PYTHON_BIN" "$RENDERER_SCRIPT"

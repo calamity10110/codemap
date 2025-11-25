@@ -7,7 +7,7 @@
 ![Go](https://img.shields.io/badge/go-1.21+-00ADD8.svg)
 ![Python](https://img.shields.io/badge/python-3.8+-3776AB.svg)
 
-![codemap screenshot](assets/screenshot.png)
+![codemap screenshot](assets/codemap.png)
 
 ## Why codemap exists
 
@@ -90,9 +90,21 @@ codemap /path/to/my/project
 2.  Or simply tell Claude, Codex, or Cursor:
     > "Use codemap to understand my project structure."
 
+## Skyline Mode
+
+Want something more visual? Run `codemap --skyline` for a cityscape visualization of your codebase:
+
+```bash
+codemap --skyline
+```
+
+![codemap skyline](assets/skyline.png)
+
+Each building represents a language in your project — taller buildings mean more code. A quick, beautiful way to see what your project is made of.
+
 ## Roadmap
 
-- [ ] **Graph Mode** (ASCII relationship graph)
+- [x] **Skyline Mode** (`codemap --skyline`) — ASCII cityscape visualization
 - [ ] **Dependency mapping** (import graph)
 
 ## Contributing

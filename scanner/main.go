@@ -20,6 +20,7 @@ type FileInfo struct {
 // Project represents the root of the codebase.
 type Project struct {
 	Root  string     `json:"root"`
+	Mode  string     `json:"mode"`
 	Files []FileInfo `json:"files"`
 }
 
@@ -55,6 +56,7 @@ func loadGitignore(root string) *ignore.GitIgnore {
 }
 
 func main() {
+	skylineMode := flag.Bool("skyline", false, "Enable skyline visualization mode")
 	flag.Parse()
 	root := flag.Arg(0)
 	if root == "" {
@@ -70,8 +72,14 @@ func main() {
 	// Load .gitignore if it exists
 	gitignore := loadGitignore(root)
 
+	mode := "tree"
+	if *skylineMode {
+		mode = "skyline"
+	}
+
 	project := Project{
 		Root:  absRoot,
+		Mode:  mode,
 		Files: []FileInfo{},
 	}
 

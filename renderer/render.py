@@ -9,6 +9,13 @@ from rich.table import Table
 from rich.text import Text
 from rich import box
 from rich.columns import Columns
+from rich.layout import Layout
+from rich.align import Align
+from rich.style import Style
+
+# Import cityscape from same directory (works when run as script)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import cityscape
 
 def load_data():
     """Load JSON data from stdin or file."""
@@ -83,6 +90,31 @@ def get_top_large_files(files):
     # Return set of paths for top 5
     return {f['path'] for f in source_files[:5]}
 
+def get_file_color(ext):
+    """Return a color style based on file extension."""
+    style = "white"
+    # Cyan
+    if ext in ['.go', '.mod', '.sum', '.dart']: style = "cyan"
+    # Yellow
+    elif ext in ['.py', '.pyc', '.pyd', '.venv', '.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs', '.vue', '.svelte', '.pl', '.pm', '.t', '.sql', '.db', '.sqlite']: style = "yellow"
+    # Magenta
+    elif ext in ['.html', '.css', '.scss', '.sass', '.less', '.php', '.phtml', '.hs', '.lhs', '.tf', '.tfvars', '.hcl']: style = "magenta"
+    # Green
+    elif ext in ['.md', '.txt', '.rst', '.adoc']: style = "green"
+    # Red
+    elif ext in ['.json', '.yaml', '.yml', '.toml', '.xml', '.csv', '.ini', '.conf', '.env', '.rb', '.erb', '.gemfile', '.gemspec']: style = "red"
+    # Bold White
+    elif ext in ['.sh', 'Makefile', 'Dockerfile', 'dockerfile', '.bat', '.ps1']: style = "bold white"
+    # Bold Red
+    elif ext in ['.swift', '.kt', '.java', '.kotlin', '.scala', '.groovy', '.rs', '.rlib']: style = "bold red"
+    # Bold Blue
+    elif ext in ['.c', '.cpp', '.h', '.hpp', '.cc', '.cxx', '.m', '.mm', '.cs', '.fs', '.vb']: style = "bold blue"
+    # Blue
+    elif ext in ['.lua', '.r', '.rmd']: style = "blue"
+    # Dim White
+    elif ext in ['.dockerignore', '.gitignore', '.gitattributes']: style = "dim white"
+    return style
+
 def build_tree(tree, files):
     """
     Organize files into a tree structure.
@@ -108,79 +140,6 @@ def build_tree(tree, files):
                 current = current[part]
                 
     # Recursively add to rich Tree
-    def add_nodes(current_node, current_dict):
-        # Separate files and directories
-        dirs = []
-        files = []
-        
-        for name, node_data in current_dict.items():
-            is_file = isinstance(node_data, dict) and node_data.get('__is_file__')
-            if is_file:
-                files.append((name, node_data['data']))
-            else:
-                dirs.append((name, node_data))
-        
-        # Sort directories and files
-        dirs.sort(key=lambda x: x[0])
-        files.sort(key=lambda x: x[0])
-        
-        # Add directories first
-        for name, node_data in dirs:
-            # If this directory has exactly 1 child which is a directory (and no files), merge.
-            merged_name = name
-            merged_data = node_data
-            
-            while True:
-                sub_dirs = []
-                sub_files = []
-                for k, v in merged_data.items():
-                    if isinstance(v, dict) and v.get('__is_file__'):
-                        sub_files.append(k)
-                    else:
-                        sub_dirs.append((k, v))
-                
-                if len(sub_files) == 0 and len(sub_dirs) == 1:
-                    # Flatten!
-                    sub_name, sub_data = sub_dirs[0]
-                    merged_name = f"{merged_name}/{sub_name}"
-                    merged_data = sub_data
-                else:
-                    break
-            
-            # Calculate stats for this (possibly merged) directory
-            file_count, total_size = get_dir_stats(merged_data)
-            
-            # Check for homogeneous extensions in the immediate children of the merged dir            
-            immediate_files = []
-            for k, v in merged_data.items():
-                if isinstance(v, dict) and v.get('__is_file__'):
-                    immediate_files.append(v['data'])
-            
-            common_ext = None
-            if len(immediate_files) > 1:
-                exts = {f['ext'] for f in immediate_files}
-                if len(exts) == 1:
-                    common_ext = exts.pop()
-
-            # Format Stats
-            stats_parts = []
-            if file_count == 1:
-                # Single file: just size
-                stats_parts.append(format_size(total_size))
-            else:
-                stats_parts.append(f"{file_count} files")
-                stats_parts.append(format_size(total_size))
-            
-            if common_ext:
-                stats_parts.append(f"all {common_ext}")
-            
-            stats_str = f"({', '.join(stats_parts)})"
-            
-            branch = current_node.add(f"[bold blue]📂 {merged_name}/[/] [dim]{stats_str}[/]")
-
-            add_nodes(branch, merged_data, strip_ext=common_ext)
-            
-    # Update add_nodes signature to support recursion with stripping
     def add_nodes_wrapper(current_node, current_dict, strip_ext=None):
         # Separate files and directories
         dirs = []
@@ -261,27 +220,7 @@ def build_tree(tree, files):
                     display_name = name[:-len(strip_ext)]
                 
                 # Color mapping
-                style = "white"
-                # Cyan
-                if ext in ['.go', '.mod', '.sum', '.dart']: style = "cyan"
-                # Yellow
-                elif ext in ['.py', '.pyc', '.pyd', '.venv', '.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs', '.vue', '.svelte', '.pl', '.pm', '.t', '.sql', '.db', '.sqlite']: style = "yellow"
-                # Magenta
-                elif ext in ['.html', '.css', '.scss', '.sass', '.less', '.php', '.phtml', '.hs', '.lhs', '.tf', '.tfvars', '.hcl']: style = "magenta"
-                # Green
-                elif ext in ['.md', '.txt', '.rst', '.adoc']: style = "green"
-                # Red
-                elif ext in ['.json', '.yaml', '.yml', '.toml', '.xml', '.csv', '.ini', '.conf', '.env', '.rb', '.erb', '.gemfile', '.gemspec']: style = "red"
-                # Bold White
-                elif ext in ['.sh', 'Makefile', 'Dockerfile', 'dockerfile', '.bat', '.ps1']: style = "bold white"
-                # Bold Red
-                elif ext in ['.swift', '.kt', '.java', '.kotlin', '.scala', '.groovy', '.rs', '.rlib']: style = "bold red"
-                # Bold Blue
-                elif ext in ['.c', '.cpp', '.h', '.hpp', '.cc', '.cxx', '.m', '.mm', '.cs', '.fs', '.vb']: style = "bold blue"
-                # Blue
-                elif ext in ['.lua', '.r', '.rmd']: style = "blue"
-                # Dim White
-                elif ext in ['.dockerignore', '.gitignore', '.gitattributes']: style = "dim white"
+                style = get_file_color(ext)
                 
                 # Highlight if in top 5 large files
                 prefix = ""
@@ -301,7 +240,12 @@ def main():
     root_path = data.get('root', 'Project')
     project_name = os.path.basename(root_path)
     files = data.get('files', [])
+    mode = data.get('mode', 'tree')
     
+    if mode == 'skyline':
+        cityscape.render(files, project_name)
+        return
+
     # Stats
     total_files = len(files)
     total_size = sum(f['size'] for f in files)
