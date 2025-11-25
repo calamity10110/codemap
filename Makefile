@@ -1,34 +1,28 @@
-.PHONY: all venv install run deps grammars clean
+.PHONY: all build run deps grammars clean
 
-VENV_DIR = venv
-PYTHON = $(VENV_DIR)/bin/python3
-PIP = $(VENV_DIR)/bin/pip3
+all: build
 
-all: install run
-
-venv:
-	python3 -m venv $(VENV_DIR)
-
-install: venv
-	$(PIP) install rich
+build:
+	go build -o codemap .
 
 DIR ?= .
 ABS_DIR := $(shell cd "$(DIR)" && pwd)
 SKYLINE_FLAG := $(if $(SKYLINE),--skyline,)
 ANIMATE_FLAG := $(if $(ANIMATE),--animate,)
+DEPS_FLAG := $(if $(DEPS),--deps,)
 
-run: install
-	cd scanner && go run main.go deps.go $(SKYLINE_FLAG) $(ANIMATE_FLAG) "$(ABS_DIR)" | ../$(PYTHON) ../renderer/render.py
+run: build
+	./codemap $(SKYLINE_FLAG) $(ANIMATE_FLAG) $(DEPS_FLAG) "$(ABS_DIR)"
 
 # Build tree-sitter grammar libraries (one-time setup for deps mode)
 grammars:
 	cd scanner && ./build-grammars.sh
 
 # Dependency graph mode - shows functions and imports per file
-deps: install grammars
-	cd scanner && go run main.go deps.go --deps "$(ABS_DIR)" | ../$(PYTHON) ../renderer/render.py
+deps: build grammars
+	./codemap --deps "$(ABS_DIR)"
 
 clean:
-	rm -rf $(VENV_DIR)
+	rm -f codemap
 	rm -rf scanner/.grammar-build
 	rm -rf scanner/grammars

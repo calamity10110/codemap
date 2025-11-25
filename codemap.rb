@@ -1,51 +1,33 @@
 class Codemap < Formula
   desc "Generates a compact, visually structured 'brain map' of your codebase for LLM context"
   homepage "https://github.com/JordanCoin/codemap"
-  url "https://github.com/JordanCoin/codemap/archive/refs/tags/v1.6.tar.gz"
-  sha256 "67188ecb6926f1c87373786f4c69d1a2c86cebc47a886bdf0e6522fd8b62fa31"
+  url "https://github.com/JordanCoin/codemap/archive/refs/tags/v1.8.tar.gz"
+  sha256 "UPDATE_THIS_AFTER_RELEASE"
   license "MIT"
 
   depends_on "go" => :build
-  depends_on "python@3.12"
-
-  include Language::Python::Virtualenv
-
-  resource "rich" do
-    url "https://files.pythonhosted.org/packages/source/r/rich/rich-13.7.1.tar.gz"
-    sha256 "9be308cb1fe2f1f57d67ce99e95af38a1e2bc71ad9813b0e247cf7ffbcc3a432"
-  end
 
   def install
-    # 1. Build Go Scanner (includes deps.go for --deps mode)
+    # Install tree-sitter queries for --deps mode
+    (libexec/"queries").install Dir["scanner/queries/*.scm"]
+
+    # Build grammars for --deps mode
+    (libexec/"grammars").mkpath
     cd "scanner" do
-      system "go", "build", "-o", "codemap-scanner", "."
-      (libexec/"bin").install "codemap-scanner"
-
-      # Install tree-sitter queries
-      (libexec/"queries").install Dir["queries/*.scm"]
-
-      # Build grammars for --deps mode
-      (libexec/"grammars").mkpath
       system "bash", "build-grammars.sh"
-      (libexec/"grammars").install Dir["grammars/*.dylib"]
-      (libexec/"grammars").install Dir["grammars/*.so"]
     end
+    (libexec/"grammars").install Dir["scanner/grammars/*.dylib"]
+    (libexec/"grammars").install Dir["scanner/grammars/*.so"]
 
-    # 2. Install Python Renderers
-    (libexec/"renderer").install "renderer/render.py"
-    (libexec/"renderer").install "renderer/cityscape.py"
-    (libexec/"renderer").install "renderer/depgraph.py"
+    # Build from root with embedded paths
+    system "go", "build", "-o", libexec/"codemap", "."
 
-    # 3. Create Virtual Environment and Install Dependencies
-    venv = virtualenv_create(libexec/"venv", "python3")
-    venv.pip_install resources
-
-    # 4. Install Wrapper Script
+    # Create wrapper script with environment variables
     (bin/"codemap").write <<~EOS
       #!/bin/bash
       export CODEMAP_GRAMMAR_DIR="#{libexec}/grammars"
       export CODEMAP_QUERY_DIR="#{libexec}/queries"
-      "#{libexec}/bin/codemap-scanner" "$@" | "#{libexec}/venv/bin/python3" "#{libexec}/renderer/render.py"
+      exec "#{libexec}/codemap" "$@"
     EOS
   end
 

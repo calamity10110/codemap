@@ -6,4 +6,5 @@ scanner/.grammar-build/
 scanner/grammars/
 
 # Built binaries
+codemap
 scanner/codemap-scanner
