@@ -42,10 +42,12 @@ fi
 # Target directory (default to current)
 TARGET_DIR=""
 SKYLINE_MODE=""
+ANIMATE_MODE=""
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --skyline) SKYLINE_MODE="--skyline" ;;
+        --animate) ANIMATE_MODE="--animate" ;;
         *) TARGET_DIR="$1" ;;
     esac
     shift
@@ -56,4 +58,4 @@ if [ -z "$TARGET_DIR" ]; then
 fi
 
 # Run
-"$SCANNER_BIN" $SKYLINE_MODE "$TARGET_DIR" | "$PYTHON_BIN" "$RENDERER_SCRIPT"
+"$SCANNER_BIN" $SKYLINE_MODE $ANIMATE_MODE "$TARGET_DIR" | "$PYTHON_BIN" "$RENDERER_SCRIPT"

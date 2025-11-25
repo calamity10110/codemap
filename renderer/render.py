@@ -241,9 +241,10 @@ def main():
     project_name = os.path.basename(root_path)
     files = data.get('files', [])
     mode = data.get('mode', 'tree')
-    
+    animate = data.get('animate', False)
+
     if mode == 'skyline':
-        cityscape.render(files, project_name)
+        cityscape.render(files, project_name, animate=animate)
         return
 
     # Stats

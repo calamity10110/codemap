@@ -19,9 +19,10 @@ type FileInfo struct {
 
 // Project represents the root of the codebase.
 type Project struct {
-	Root  string     `json:"root"`
-	Mode  string     `json:"mode"`
-	Files []FileInfo `json:"files"`
+	Root    string     `json:"root"`
+	Mode    string     `json:"mode"`
+	Animate bool       `json:"animate"`
+	Files   []FileInfo `json:"files"`
 }
 
 var ignoredDirs = map[string]bool{
@@ -57,6 +58,7 @@ func loadGitignore(root string) *ignore.GitIgnore {
 
 func main() {
 	skylineMode := flag.Bool("skyline", false, "Enable skyline visualization mode")
+	animateMode := flag.Bool("animate", false, "Enable animation (use with --skyline)")
 	flag.Parse()
 	root := flag.Arg(0)
 	if root == "" {
@@ -78,9 +80,10 @@ func main() {
 	}
 
 	project := Project{
-		Root:  absRoot,
-		Mode:  mode,
-		Files: []FileInfo{},
+		Root:    absRoot,
+		Mode:    mode,
+		Animate: *animateMode,
+		Files:   []FileInfo{},
 	}
 
 	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {

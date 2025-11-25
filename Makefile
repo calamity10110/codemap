@@ -15,9 +15,10 @@ install: venv
 DIR ?= .
 ABS_DIR := $(shell cd "$(DIR)" && pwd)
 SKYLINE_FLAG := $(if $(SKYLINE),--skyline,)
+ANIMATE_FLAG := $(if $(ANIMATE),--animate,)
 
 run: install
-	cd scanner && go run main.go $(SKYLINE_FLAG) "$(ABS_DIR)" | ../$(PYTHON) ../renderer/render.py
+	cd scanner && go run main.go $(SKYLINE_FLAG) $(ANIMATE_FLAG) "$(ABS_DIR)" | ../$(PYTHON) ../renderer/render.py
 
 clean:
 	rm -rf $(VENV_DIR)

@@ -95,12 +95,12 @@ codemap /path/to/my/project
 Want something more visual? Run `codemap --skyline` for a cityscape visualization of your codebase:
 
 ```bash
-codemap --skyline
+codemap --skyline --animate
 ```
 
-![codemap skyline](assets/skyline.png)
+![codemap skyline](assets/skyline-animated.gif)
 
-Each building represents a language in your project — taller buildings mean more code. A quick, beautiful way to see what your project is made of.
+Each building represents a language in your project — taller buildings mean more code. Add `--animate` for rising buildings, twinkling stars, and shooting stars.
 
 ## Roadmap
 
