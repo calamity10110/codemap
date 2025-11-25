@@ -62,7 +62,27 @@ func main() {
 	skylineMode := flag.Bool("skyline", false, "Enable skyline visualization mode")
 	animateMode := flag.Bool("animate", false, "Enable animation (use with --skyline)")
 	depsMode := flag.Bool("deps", false, "Enable dependency graph mode (function/import analysis)")
+	helpMode := flag.Bool("help", false, "Show help")
 	flag.Parse()
+
+	if *helpMode {
+		fmt.Println("codemap - Generate a brain map of your codebase for LLM context")
+		fmt.Println()
+		fmt.Println("Usage: codemap [options] [path]")
+		fmt.Println()
+		fmt.Println("Options:")
+		fmt.Println("  --help      Show this help message")
+		fmt.Println("  --skyline   City skyline visualization")
+		fmt.Println("  --animate   Animated skyline (use with --skyline)")
+		fmt.Println("  --deps      Dependency flow map (functions & imports)")
+		fmt.Println()
+		fmt.Println("Examples:")
+		fmt.Println("  codemap .                    # Basic tree view")
+		fmt.Println("  codemap --skyline .          # Skyline visualization")
+		fmt.Println("  codemap --skyline --animate  # Animated skyline")
+		fmt.Println("  codemap --deps /path/to/proj # Dependency flow map")
+		os.Exit(0)
+	}
 	root := flag.Arg(0)
 	if root == "" {
 		root = "."
