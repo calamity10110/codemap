@@ -7,4 +7,5 @@ scanner/grammars/
 
 # Built binaries
 codemap
+codemap-mcp
 scanner/codemap-scanner

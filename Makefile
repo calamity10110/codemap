@@ -1,9 +1,12 @@
-.PHONY: all build run deps grammars clean
+.PHONY: all build build-mcp run deps grammars clean
 
 all: build
 
 build:
 	go build -o codemap .
+
+build-mcp:
+	go build -o codemap-mcp ./mcp/
 
 DIR ?= .
 ABS_DIR := $(shell cd "$(DIR)" && pwd)
@@ -23,6 +26,6 @@ deps: build grammars
 	./codemap --deps "$(ABS_DIR)"
 
 clean:
-	rm -f codemap
+	rm -f codemap codemap-mcp
 	rm -rf scanner/.grammar-build
 	rm -rf scanner/grammars

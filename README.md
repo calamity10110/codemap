@@ -8,6 +8,23 @@
 
 ![codemap screenshot](assets/codemap.png)
 
+## Table of Contents
+
+- [Why codemap exists](#why-codemap-exists)
+- [Features](#features)
+- [How It Works](#%EF%B8%8F-how-it-works)
+- [Performance](#-performance)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Diff Mode](#diff-mode)
+- [Dependency Flow Mode](#dependency-flow-mode)
+- [Skyline Mode](#skyline-mode)
+- [Supported Languages](#supported-languages)
+- [Claude Integrations](#claude-integrations)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Why codemap exists
 
 Modern LLMs are powerful, but blind. They can write code — but only after you ask them to burn tokens searching or manually explain your entire project structure.
@@ -120,18 +137,6 @@ Compare against a different branch:
 codemap --diff --ref develop
 ```
 
-## Skyline Mode
-
-Want something more visual? Run `codemap --skyline` for a cityscape visualization of your codebase:
-
-```bash
-codemap --skyline --animate
-```
-
-![codemap skyline](assets/skyline-animated.gif)
-
-Each building represents a language in your project — taller buildings mean more code. Add `--animate` for rising buildings, twinkling stars, and shooting stars.
-
 ## Dependency Flow Mode
 
 See how your code connects with `--deps`:
@@ -166,7 +171,19 @@ HUBS: config (12←), api (8←), utils (5←)
 - 🔗 **Internal dependency chains** showing how files import each other
 - 🎯 **Hub files** — the most-imported files in your codebase
 
-### Supported Languages
+## Skyline Mode
+
+Want something more visual? Run `codemap --skyline` for a cityscape visualization of your codebase:
+
+```bash
+codemap --skyline --animate
+```
+
+![codemap skyline](assets/skyline-animated.gif)
+
+Each building represents a language in your project — taller buildings mean more code. Add `--animate` for rising buildings, twinkling stars, and shooting stars.
+
+## Supported Languages
 
 codemap supports **16 languages** for dependency analysis:
 
@@ -189,11 +206,92 @@ codemap supports **16 languages** for dependency analysis:
 | R | .r, .R | library, require, source |
 | Bash | .sh, .bash | source, . |
 
+## Claude Integrations
+
+codemap provides three ways to integrate with Claude:
+
+### CLAUDE.md (Recommended)
+
+Add the included `CLAUDE.md` to your project root. Claude Code automatically reads it and knows when to run codemap:
+
+```bash
+cp /path/to/codemap/CLAUDE.md your-project/
+```
+
+This teaches Claude to:
+- Run `codemap .` before starting tasks
+- Run `codemap --deps` when refactoring
+- Run `codemap --diff` when reviewing changes
+
+### Claude Code Skill
+
+For automatic invocation, install the codemap skill:
+
+```bash
+# Copy to your project
+cp -r /path/to/codemap/.claude/skills/codemap your-project/.claude/skills/
+
+# Or install globally
+cp -r /path/to/codemap/.claude/skills/codemap ~/.claude/skills/
+```
+
+Skills are model-invoked — Claude automatically decides when to use codemap based on your questions, no explicit commands needed.
+
+### MCP Server
+
+For the deepest integration, run codemap as an MCP server:
+
+```bash
+# Build the MCP server
+make build-mcp
+
+# Add to Claude Code
+claude mcp add --transport stdio codemap -- /path/to/codemap-mcp
+```
+
+Or add to your project's `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "codemap": {
+      "command": "/path/to/codemap-mcp",
+      "args": []
+    }
+  }
+}
+```
+
+**Claude Desktop:**
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "codemap": {
+      "command": "/path/to/codemap-mcp"
+    }
+  }
+}
+```
+
+**MCP Tools:**
+| Tool | Description |
+|------|-------------|
+| `get_structure` | Project tree view with file sizes and language detection |
+| `get_dependencies` | Dependency flow with imports, functions, and hub files |
+| `get_diff` | Changed files with line counts and impact analysis |
+| `find_file` | Find files by name pattern |
+| `get_importers` | Find all files that import a specific file |
+
 ## Roadmap
 
 - [x] **Diff Mode** (`codemap --diff`) — show changed files with impact analysis
 - [x] **Skyline Mode** (`codemap --skyline`) — ASCII cityscape visualization
 - [x] **Dependency Flow** (`codemap --deps`) — function/import analysis with 16 language support
+- [x] **Claude Code Skill** — automatic invocation based on user questions
+- [x] **MCP Server** — deep integration with 5 tools for codebase analysis
 
 ## Contributing
 
