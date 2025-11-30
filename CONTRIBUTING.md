@@ -43,7 +43,7 @@ Create `scanner/queries/<lang>.scm` to define what to capture:
 ```
 
 **Finding the right node types:**
-- Use [tree-sitter playground](https://tree-sitter.github.io/tree-sitter/playground)
+- Use [tree-sitter playground](https://tree-sitter.github.io/tree-sitter/7-playground.html)
 - Check the grammar repo's `grammar.js` for node names
 - Look at existing queries in `scanner/queries/` for examples
 
