@@ -62,6 +62,7 @@ jobs:
 
       - name: Build grammars
         run: |
+          set -e
           mkdir -p grammars
 
           echo "$GRAMMARS" | while IFS=: read -r lang repo branch src_dir; do
@@ -76,24 +77,32 @@ jobs:
 
             if [ ! -d "$src_path" ]; then
               echo "  ✗ Source not found: $src_path"
-              cd .. && rm -rf _grammar_build
-              continue
+              exit 1
             fi
 
             sources="$src_path/parser.c"
+            use_cxx=false
             if [ -f "$src_path/scanner.c" ]; then
               sources="$sources $src_path/scanner.c"
             elif [ -f "$src_path/scanner.cc" ]; then
+              use_cxx=true
               clang++ -c -fPIC -I"$src_path" "$src_path/scanner.cc" -o scanner.o
               sources="$sources scanner.o"
             fi
 
-            clang -shared -fPIC -I"$src_path" $sources -o ../grammars/libtree-sitter-$lang.dylib 2>&1 || echo "  ✗ Compile failed"
+            # Use clang++ for linking when C++ scanner is present
+            if $use_cxx; then
+              clang++ -shared -fPIC -I"$src_path" $sources -o ../grammars/libtree-sitter-$lang.dylib
+            else
+              clang -shared -fPIC -I"$src_path" $sources -o ../grammars/libtree-sitter-$lang.dylib
+            fi
             cd .. && rm -rf _grammar_build
 
-            [ -f "grammars/libtree-sitter-$lang.dylib" ] && echo "  ✓ Built" || echo "  ✗ Failed"
+            echo "  ✓ Built $lang"
           done
 
+          echo ""
+          echo "Built grammars:"
           ls -la grammars/
 
       - name: Create release archive
@@ -153,6 +162,7 @@ jobs:
 
       - name: Build grammars
         run: |
+          set -e
           mkdir -p grammars
           CC="${{ matrix.cc || 'gcc' }}"
           CXX="${CC/gcc/g++}"
@@ -169,25 +179,32 @@ jobs:
 
             if [ ! -d "$src_path" ]; then
               echo "  ✗ Source not found: $src_path"
-              cd .. && rm -rf _grammar_build
-              continue
+              exit 1
             fi
 
             sources="$src_path/parser.c"
+            use_cxx=false
             if [ -f "$src_path/scanner.c" ]; then
               sources="$sources $src_path/scanner.c"
             elif [ -f "$src_path/scanner.cc" ]; then
-              $CXX -c -fPIC -I"$src_path" "$src_path/scanner.cc" -o scanner.o 2>/dev/null || \
-              g++ -c -fPIC -I"$src_path" "$src_path/scanner.cc" -o scanner.o
+              use_cxx=true
+              $CXX -c -fPIC -I"$src_path" "$src_path/scanner.cc" -o scanner.o
               sources="$sources scanner.o"
             fi
 
-            $CC -shared -fPIC -I"$src_path" $sources -o ../grammars/libtree-sitter-$lang.so 2>&1 || echo "  ✗ Compile failed"
+            # Use g++ for linking when C++ scanner is present (links libstdc++)
+            if $use_cxx; then
+              $CXX -shared -fPIC -I"$src_path" $sources -o ../grammars/libtree-sitter-$lang.so
+            else
+              $CC -shared -fPIC -I"$src_path" $sources -o ../grammars/libtree-sitter-$lang.so
+            fi
             cd .. && rm -rf _grammar_build
 
-            [ -f "grammars/libtree-sitter-$lang.so" ] && echo "  ✓ Built" || echo "  ✗ Failed"
+            echo "  ✓ Built $lang"
           done
 
+          echo ""
+          echo "Built grammars:"
           ls -la grammars/
 
       - name: Create release archive
@@ -254,6 +271,7 @@ jobs:
 
       - name: Build grammars
         run: |
+          set -e
           mkdir -p grammars
 
           echo "$GRAMMARS" | while IFS=: read -r lang repo branch src_dir; do
@@ -268,24 +286,32 @@ jobs:
 
             if [ ! -d "$src_path" ]; then
               echo "  ✗ Source not found: $src_path"
-              cd .. && rm -rf _grammar_build
-              continue
+              exit 1
             fi
 
             sources="$src_path/parser.c"
+            use_cxx=false
             if [ -f "$src_path/scanner.c" ]; then
               sources="$sources $src_path/scanner.c"
             elif [ -f "$src_path/scanner.cc" ]; then
-              zig c++ -target x86_64-windows-gnu -c -fPIC -I"$src_path" "$src_path/scanner.cc" -o scanner.o 2>/dev/null || echo "  Warning: C++ issue"
-              [ -f scanner.o ] && sources="$sources scanner.o"
+              use_cxx=true
+              zig c++ -target x86_64-windows-gnu -c -fPIC -I"$src_path" "$src_path/scanner.cc" -o scanner.o
+              sources="$sources scanner.o"
             fi
 
-            zig cc -target x86_64-windows-gnu -shared -fPIC -I"$src_path" $sources -o ../grammars/libtree-sitter-$lang.dll 2>&1 || echo "  ✗ Compile failed"
+            # Use zig c++ for linking when C++ scanner is present (links libstdc++)
+            if $use_cxx; then
+              zig c++ -target x86_64-windows-gnu -shared -fPIC -I"$src_path" $sources -o ../grammars/libtree-sitter-$lang.dll
+            else
+              zig cc -target x86_64-windows-gnu -shared -fPIC -I"$src_path" $sources -o ../grammars/libtree-sitter-$lang.dll
+            fi
             cd .. && rm -rf _grammar_build
 
-            [ -f "grammars/libtree-sitter-$lang.dll" ] && echo "  ✓ Built" || echo "  ✗ Failed"
+            echo "  ✓ Built $lang"
           done
 
+          echo ""
+          echo "Built grammars:"
           ls -la grammars/
 
       - name: Create release archive
