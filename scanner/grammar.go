@@ -7,9 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"unsafe"
 
-	"github.com/ebitengine/purego"
 	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
@@ -87,6 +85,16 @@ func NewGrammarLoader() *GrammarLoader {
 	return loader
 }
 
+// HasGrammars returns true if grammar directory was found
+func (l *GrammarLoader) HasGrammars() bool {
+	return l.grammarDir != ""
+}
+
+// GrammarDir returns the grammar directory path (for diagnostics)
+func (l *GrammarLoader) GrammarDir() string {
+	return l.grammarDir
+}
+
 // LoadLanguage dynamically loads a grammar from .so/.dylib
 func (l *GrammarLoader) LoadLanguage(lang string) error {
 	if _, exists := l.configs[lang]; exists {
@@ -110,14 +118,16 @@ func (l *GrammarLoader) LoadLanguage(lang string) error {
 
 	// Load shared library
 	libPath := filepath.Join(l.grammarDir, fmt.Sprintf("libtree-sitter-%s%s", lang, libExt))
-	lib, err := purego.Dlopen(libPath, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+	lib, err := loadLibrary(libPath)
 	if err != nil {
 		return fmt.Errorf("load %s: %w", libPath, err)
 	}
 
 	// Get language function
-	var langFunc func() unsafe.Pointer
-	purego.RegisterLibFunc(&langFunc, lib, fmt.Sprintf("tree_sitter_%s", lang))
+	langFunc, err := getLanguageFunc(lib, lang)
+	if err != nil {
+		return fmt.Errorf("get func for %s: %w", lang, err)
+	}
 	language := tree_sitter.NewLanguage(langFunc())
 
 	// Load query

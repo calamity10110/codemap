@@ -129,6 +129,21 @@ func main() {
 func runDepsMode(absRoot, root string, gitignore *ignore.GitIgnore, jsonMode bool, diffRef string, changedFiles map[string]bool) {
 	loader := scanner.NewGrammarLoader()
 
+	// Check if grammars are available
+	if !loader.HasGrammars() {
+		fmt.Fprintln(os.Stderr, "")
+		fmt.Fprintln(os.Stderr, "⚠️  No tree-sitter grammars found for --deps mode.")
+		fmt.Fprintln(os.Stderr, "")
+		fmt.Fprintln(os.Stderr, "To enable dependency analysis, either:")
+		fmt.Fprintln(os.Stderr, "  • Install via Homebrew: brew install JordanCoin/tap/codemap")
+		fmt.Fprintln(os.Stderr, "  • Download release with grammars: https://github.com/JordanCoin/codemap/releases")
+		fmt.Fprintln(os.Stderr, "  • Build from source: make deps && go build")
+		fmt.Fprintln(os.Stderr, "")
+		fmt.Fprintln(os.Stderr, "Or set CODEMAP_GRAMMAR_DIR to your grammars directory.")
+		fmt.Fprintln(os.Stderr, "")
+		os.Exit(1)
+	}
+
 	analyses, err := scanner.ScanForDeps(root, gitignore, loader)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error scanning for deps: %v\n", err)

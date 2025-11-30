@@ -61,12 +61,36 @@ One command → a compact, structured “brain map” of your codebase that LLMs
 
 ## Installation
 
-### Homebrew (recommended)
+### Homebrew (macOS/Linux)
 
 ```bash
 brew tap JordanCoin/tap
 brew install codemap
 ```
+
+### Download Binary
+
+Pre-built binaries with full `--deps` support are available for all platforms on the [Releases page](https://github.com/JordanCoin/codemap/releases):
+
+- **macOS**: `codemap-darwin-amd64.tar.gz` (Intel) or `codemap-darwin-arm64.tar.gz` (Apple Silicon)
+- **Linux**: `codemap-linux-amd64.tar.gz` or `codemap-linux-arm64.tar.gz`
+- **Windows**: `codemap-windows-amd64.zip`
+
+```bash
+# Example: download and install on Linux/macOS
+curl -L https://github.com/JordanCoin/codemap/releases/latest/download/codemap-linux-amd64.tar.gz | tar xz
+sudo mv codemap-linux-amd64/codemap /usr/local/bin/
+sudo mv codemap-linux-amd64/grammars /usr/local/lib/codemap/
+```
+
+```powershell
+# Example: Windows (PowerShell)
+Invoke-WebRequest -Uri "https://github.com/JordanCoin/codemap/releases/latest/download/codemap-windows-amd64.zip" -OutFile codemap.zip
+Expand-Archive codemap.zip -DestinationPath C:\codemap
+# Add C:\codemap\codemap-windows-amd64 to your PATH
+```
+
+Each release includes the binary, tree-sitter grammars, and query files for full `--deps` support.
 
 ### From source
 

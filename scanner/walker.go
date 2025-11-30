@@ -11,6 +11,7 @@ import (
 var IgnoredDirs = map[string]bool{
 	".git":           true,
 	"node_modules":   true,
+	"vendor":         true,
 	"Pods":           true,
 	"build":          true,
 	"DerivedData":    true,
@@ -19,6 +20,7 @@ var IgnoredDirs = map[string]bool{
 	"__pycache__":    true,
 	".DS_Store":      true,
 	"venv":           true,
+	".venv":          true,
 	".env":           true,
 	".pytest_cache":  true,
 	"dist":           true,

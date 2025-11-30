@@ -10,23 +10,13 @@ import (
 func ReadExternalDeps(root string) map[string][]string {
 	deps := make(map[string][]string)
 
-	// Directories to skip
-	skipDirs := map[string]bool{
-		"node_modules": true,
-		"vendor":       true,
-		".git":         true,
-		"venv":         true,
-		".venv":        true,
-		"__pycache__":  true,
-	}
-
 	// Walk tree to find all manifest files
 	filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		if info == nil {
 			return nil
 		}
 		if info.IsDir() {
-			if skipDirs[info.Name()] {
+			if IgnoredDirs[info.Name()] {
 				return filepath.SkipDir
 			}
 			return nil
