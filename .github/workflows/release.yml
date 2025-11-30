@@ -108,16 +108,15 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
           ZIG_TARGET: ${{ matrix.zig_target }}
           CGO_ENABLED: 1
-          CC: ${{ github.workspace }}/../../../home/runner/zigcc/zcc
-          CXX: ${{ github.workspace }}/../../../home/runner/zigcc/zxx
         run: |
           export CC="$HOME/zigcc/zcc"
           export CXX="$HOME/zigcc/zxx"
 
+          # -s -w strips debug symbols (avoids dsymutil issue when cross-compiling for macOS)
           if [ "${{ matrix.goos }}" = "windows" ]; then
-            go build -o codemap.exe .
+            go build -ldflags="-s -w" -o codemap.exe .
           else
-            go build -o codemap .
+            go build -ldflags="-s -w" -o codemap .
           fi
 
       - name: Download and build grammars
