@@ -106,7 +106,7 @@ winget:
       - llm
       - code-analysis
     repository:
-      owner: microsoft
+      owner: JordanCoin
       name: winget-pkgs
       branch: "JordanCoin.codemap-{{.Version}}"
       token: "{{ .Env.SCOOP_TOKEN }}"
