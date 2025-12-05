@@ -75,6 +75,14 @@ scoop bucket add codemap https://github.com/JordanCoin/scoop-codemap
 scoop install codemap
 ```
 
+### Winget (Windows)
+
+```powershell
+winget install JordanCoin.codemap
+```
+
+> **Note:** Winget availability depends on Microsoft approval. Use Scoop if not yet available.
+
 ### Download Binary
 
 Pre-built binaries are available for all platforms on the [Releases page](https://github.com/JordanCoin/codemap/releases):

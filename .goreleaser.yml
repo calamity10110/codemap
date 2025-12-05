@@ -84,3 +84,35 @@ scoops:
     license: MIT
     depends:
       - ast-grep
+
+winget:
+  - name: codemap
+    publisher: JordanCoin
+    short_description: Generate a brain map of your codebase for LLM context
+    license: MIT
+    publisher_url: https://github.com/JordanCoin
+    publisher_support_url: https://github.com/JordanCoin/codemap/issues
+    package_identifier: JordanCoin.codemap
+    homepage: https://github.com/JordanCoin/codemap
+    description: |
+      codemap generates a compact, structured "brain map" of your codebase
+      that LLMs can instantly understand. One command gives instant
+      architectural context without burning tokens.
+    license_url: https://github.com/JordanCoin/codemap/blob/main/LICENSE
+    tags:
+      - cli
+      - developer-tools
+      - ai
+      - llm
+      - code-analysis
+    repository:
+      owner: microsoft
+      name: winget-pkgs
+      branch: "JordanCoin.codemap-{{.Version}}"
+      token: "{{ .Env.SCOOP_TOKEN }}"
+      pull_request:
+        enabled: true
+        base:
+          owner: microsoft
+          name: winget-pkgs
+          branch: master
