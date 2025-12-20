@@ -69,6 +69,20 @@ func RunHook(hookName, root string) error {
 
 // hookSessionStart shows project structure, starts daemon, and shows hub warnings
 func hookSessionStart(root string) error {
+	// Guard: require git repo
+	gitDir := filepath.Join(root, ".git")
+	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
+		fmt.Println("📍 Not a git repository - skipping project context")
+		fmt.Println("   (codemap hooks work best in git repos)")
+		return nil
+	}
+
+	// Handle meta-repo: parent git repo containing child git repos
+	childRepos := findChildRepos(root)
+	if len(childRepos) > 1 {
+		return hookSessionStartMultiRepo(root, childRepos)
+	}
+
 	// Check for previous session context before starting new daemon
 	lastSessionEvents := getLastSessionEvents(root)
 
@@ -569,4 +583,48 @@ func checkFileImporters(root, filePath string) error {
 // isHub checks if a file is a hub (has 3+ importers)
 func (h *hubInfo) isHub(path string) bool {
 	return len(h.Importers[path]) >= 3
+}
+
+// findChildRepos returns subdirectories that are git repositories
+func findChildRepos(root string) []string {
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return nil
+	}
+
+	var repos []string
+	for _, e := range entries {
+		if !e.IsDir() || strings.HasPrefix(e.Name(), ".") {
+			continue
+		}
+		// Check if this subdirectory is a git repo
+		if _, err := os.Stat(filepath.Join(root, e.Name(), ".git")); err == nil {
+			repos = append(repos, e.Name())
+		}
+	}
+	return repos
+}
+
+// hookSessionStartMultiRepo handles meta-repos containing multiple child repos
+func hookSessionStartMultiRepo(root string, childRepos []string) error {
+	fmt.Println("📍 Multi-Repo Project Context:")
+	fmt.Printf("   %d repositories in %s\n", len(childRepos), filepath.Base(root))
+	fmt.Println()
+
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+
+	// Run codemap on each child repo (with depth limit for compactness)
+	for _, repo := range childRepos {
+		repoPath := filepath.Join(root, repo)
+		cmd := exec.Command(exe, "--depth", "2", repoPath)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Run()
+		fmt.Println()
+	}
+
+	return nil
 }
