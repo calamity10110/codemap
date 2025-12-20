@@ -65,6 +65,17 @@ func NewAstGrepScanner() (*AstGrepScanner, error) {
 	return &AstGrepScanner{rulesDir: rulesDir, binary: binary}, nil
 }
 
+// extractJSONArray finds and extracts a JSON array from output that may have garbage before it
+// This handles ast-grep 0.40.2 which had a debug println! bug
+func extractJSONArray(data []byte) []byte {
+	// Find the first '[' which starts the JSON array
+	idx := strings.Index(string(data), "[")
+	if idx == -1 {
+		return nil
+	}
+	return data[idx:]
+}
+
 // findAstGrepBinary checks for "ast-grep" first, then "sg"
 // Note: Linux has a system "sg" command (setgroups), so we check ast-grep first
 func findAstGrepBinary() string {
@@ -111,14 +122,20 @@ func (s *AstGrepScanner) ScanDirectory(root string) ([]FileAnalysis, error) {
 	cmd := exec.Command(s.binary, "scan", "--inline-rules", inlineRules, "--json", root)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		// sg scan returns non-zero if no matches, check if output is valid JSON
-		if len(out) == 0 || !strings.HasPrefix(string(out), "[") {
+		// sg scan returns non-zero if no matches, check if output contains JSON
+		if len(out) == 0 {
 			return nil, nil
 		}
 	}
 
+	// Extract JSON array from output (handles debug output before JSON, e.g. ast-grep 0.40.2 bug)
+	jsonData := extractJSONArray(out)
+	if jsonData == nil {
+		return nil, nil
+	}
+
 	var matches []ScanMatch
-	if err := json.Unmarshal(out, &matches); err != nil {
+	if err := json.Unmarshal(jsonData, &matches); err != nil {
 		return nil, err
 	}
 
